@@ -342,7 +342,7 @@ def scan_image():
             
         try:
         # Replace this with the actual species name obtained from your model
-            species_detected = checkSpecies('D:\\FINAL\\App\\static\\media\\sucess_models\\trained_models\\Species_Model.h5',imagebase64)
+            species_detected = checkSpecies('./static/models/Species_Model.h5',imagebase64)
             print(species_detected)
         except Exception as e:
             print('Exception',e) 
