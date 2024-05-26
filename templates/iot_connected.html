@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishyFy - IoT Connected</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .tooltip {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden">
+        <header class="bg-gray-800 text-white text-center py-4">
+            <h1 class="text-2xl font-bold"><a href="/">FishyFy</a></h1>
+        </header>
+        <div class="p-4 relative">
+            <h2 class="text-center text-lg font-semibold mb-4">Please Keep the Fish near the <span class="text-green-400 hover:bg-green-400 hover:text-white">Gas Sensor</span></h2>
+            <div class="flex justify-center items-center mb-4 relative">
+                <img src="../static/images/nodemcu board.jpg" alt="Arduino Board" class="w-full max-w-xs h-auto">
+                <span class="bg-blue-500 text-white px-2 py-1 rounded tooltip">IoT Connected</span>
+            </div>
+            <div class="text-center mb-4">
+                <button id="scanButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 active:bg-blue-700 transition transform hover:scale-105">
+                    <span id="buttonText">Check Gases</span>
+                    <span id="loadingAnimation" class="hidden animate-spin">&#9696;</span>
+                </button>
+            </div>
+            <div id="gasReadings" class="hidden">
+                <h3 class="text-lg font-semibold mb-2">Gas Readings</h3>
+                <table class="table-auto">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2">Gas</th>
+                            <th class="px-4 py-2">Concentration (ppm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border px-4 py-2">Ammonia</td>
+                            <td class="border px-4 py-2" id="ammonia_ppm"></td>
+                        </tr>
+                        <tr>
+                            <td class="border px-4 py-2">Hydrogen Sulfide Detected</td>
+                            <td class="border px-4 py-2" id="hydrogen_sulfide_detected"></td>
+                        </tr>
+                        <tr>
+                            <td class="border px-4 py-2">Methane Detected</td>
+                            <td class="border px-4 py-2" id="methane_detected"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-4">
+                    <button id="scanAgainButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 active:bg-blue-700 transition transform hover:scale-105">Scan Again</button>
+                </div>
+            </div>
+            <div id="progressBar" class="hidden mt-4 text-center">
+                <h3 class="text-lg font-semibold mb-2">Collecting Readings</h3>
+                <div class="w-full bg-blue-200 h-4 rounded-md">
+                    <div id="progressBarFill" class="bg-blue-500 h-full rounded-md"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+         document.getElementById('scanButton').addEventListener('click', function () {
+    // Hide the button
+    document.getElementById('scanButton').classList.add('hidden');
+
+    // Show loading animation
+    document.getElementById('buttonText').classList.add('hidden');
+    document.getElementById('loadingAnimation').classList.remove('hidden');
+
+    // Show progress bar
+    document.getElementById('progressBar').classList.remove('hidden');
+
+    // Animate progress bar fill
+    const progressBarFill = document.getElementById('progressBarFill');
+    progressBarFill.style.width = '0%'; // Start with 0% width
+    const duration = 35000; // Duration in milliseconds (same as gas detection period)
+    let startTime = null;
+
+    function animate(time) {
+        if (!startTime) {
+            startTime = time;
+        }
+        const progress = time - startTime;
+        const width = Math.min(progress / duration * 100, 100);
+        progressBarFill.style.width = width + '%';
+        if (progress < duration) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+
+    // Send request to Flask backend to start scanning
+    fetch('/scan_smell')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Hide image and show gas readings
+                document.querySelector('.flex.justify-center.items-center.mb-4.relative').classList.add('hidden');
+                document.getElementById('gasReadings').classList.remove('hidden');
+
+                // Update gas readings
+                document.getElementById('ammonia_ppm').textContent = data.ammonia;
+                document.getElementById('hydrogen_sulfide_detected').textContent = data.hydrogen_sulfide ? 'Yes' : 'No';
+                document.getElementById('methane_detected').textContent = data.methane ? 'Yes' : 'No';
+            } else {
+                alert('Scan failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while scanning');
+        })
+        .finally(() => {
+            // Hide loading animation and show button text
+            document.getElementById('buttonText').classList.remove('hidden');
+            document.getElementById('loadingAnimation').classList.add('hidden');
+
+            // Hide progress bar
+            document.getElementById('progressBar').classList.add('hidden');
+        });
+});
+
+// Reload window when "Scan Again" button is clicked
+document.getElementById('scanAgainButton').addEventListener('click', function () {
+    window.location.reload();
+});
+
+    </script>
+
+</body>
+</html>

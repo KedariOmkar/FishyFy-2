@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FishyFy - Check Freshness</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    .hover-focus:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease-in-out;
+    }
+    .alert {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .alert-show {
+      opacity: 1;
+    }
+    .tooltip {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #f3f4f6;
+      color: #111827;
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+
+    /* Loading spinner styles */
+    .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -25px;
+            margin-left: -25px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        
+
+
+  </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-blue-900 p-4 flex justify-between items-center shadow-lg">
+    <div class="text-white font-bold text-lg flex items-center">
+      <img src="../static/logo/logo.jpeg" alt="FishyFy Logo" class="h-8 w-8 mr-2" />
+      FishyFy
+    </div>
+    <div class="text-white flex items-center space-x-4">
+      <span class="hidden sm:inline">User</span>
+      <button class="bg-gray-800 p-2 rounded-full focus:outline-none">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16m-7 6h7"
+          />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex flex-1 items-center justify-center p-4">
+    <div
+      class="bg-white rounded-lg shadow-lg p-8 w-full max-w-3xl text-center relative"
+    >
+      <h1 class="text-2xl font-bold mb-4">
+        Fish Species Identification and Freshness Checker
+      </h1>
+      <p class="mb-6">
+        Click on any option to input image
+        <span class="text-blue-600 hover:underline hover:font-bold hover:bg-blue-600 hover:text-white">Fish Image</span>
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-center space-x-4 mb-6">
+        <button
+          id="clickPhotoBtn"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 active:bg-blue-700"
+        >
+          Click Photo
+        </button>
+        <button
+          id="uploadPhotoBtn"
+          class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 active:bg-green-700"
+        >
+          Upload Photo
+        </button>
+      </div>
+
+      <!-- Camera and Image Container -->
+      <div id="cameraContainer" class="hidden flex flex-col items-center">
+        <video id="camera" class="rounded-lg shadow mb-4"></video>
+        <button
+          id="shutterBtn"
+          class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 active:bg-red-700"
+        >
+          Take Photo
+        </button>
+      </div>
+      <div id="uploadContainer" class="hidden flex flex-col items-center">
+        <input type="file" id="fileInput" accept="image/*" class="hidden" />
+        <label
+          for="fileInput"
+          class="bg-green-500 text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 active:bg-green-700 cursor-pointer"
+          >Choose File</label
+        >
+      </div>
+      <div id="imageContainer" class="hidden flex flex-col items-center relative">
+        <img
+          id="snappedImage"
+          src="#"
+          alt="Snapped Image"
+          class="rounded-lg shadow mb-4"
+        />
+        <button
+          id="scanBtn"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 active:bg-blue-700"
+        >
+          Scan
+        </button>
+        <div id="tooltip" class="hidden tooltip"></div>
+      </div>
+      <div id="alert" class="alert fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg"></div>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const clickPhotoBtn = document.getElementById('clickPhotoBtn')
+    const uploadPhotoBtn = document.getElementById('uploadPhotoBtn')
+    const cameraContainer = document.getElementById('cameraContainer')
+    const uploadContainer = document.getElementById('uploadContainer')
+    const imageContainer = document.getElementById('imageContainer')
+    const camera = document.getElementById('camera')
+    const shutterBtn = document.getElementById('shutterBtn')
+    const fileInput = document.getElementById('fileInput')
+    const snappedImage = document.getElementById('snappedImage')
+    const scanBtn = document.getElementById('scanBtn')
+    const alertDiv = document.getElementById('alert')
+    const tooltip = document.getElementById('tooltip')
+
+    // Toggle visibility
+    function showElement(element) {
+      element.classList.remove('hidden')
+    }
+
+    function hideElement(element) {
+      element.classList.add('hidden')
+    }
+
+    // Start camera
+    async function startCamera() {
+      const constraints = { video: {} }
+
+      // Detect if the device is a mobile device
+      const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(
+        navigator.userAgent
+      )
+
+      if (isMobileDevice) {
+        constraints.video.facingMode = 'environment' // Requests the rear camera
+      } else {
+        constraints.video.facingMode = 'user' // Requests the front camera
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        camera.srcObject = stream
+        camera.play()
+      } catch (error) {
+        console.error('Error accessing camera:', error)
+      }
+    }
+
+    // Stop camera
+    function stopCamera() {
+      const stream = camera.srcObject
+      const tracks = stream.getTracks()
+      tracks.forEach(track => track.stop())
+    }
+
+    // Take photo
+    function takePhoto() {
+      const canvas = document.createElement('canvas')
+      canvas.width = camera.videoWidth
+      canvas.height = camera.videoHeight
+      const context = canvas.getContext('2d')
+      context.drawImage(camera, 0, 0, canvas.width, canvas.height)
+      return canvas.toDataURL('image/png')
+    }
+
+    // Upload photo
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0]
+      const reader = new FileReader()
+      reader.onload = e => {
+        snappedImage.src = e.target.result
+        hideElement(uploadContainer)
+        showElement(imageContainer)
+      }
+      reader.readAsDataURL(file)
+    })
+
+    // Event listeners
+    clickPhotoBtn.addEventListener('click', () => {
+      showElement(cameraContainer)
+      hideElement(imageContainer)
+      hideElement(uploadContainer)
+      startCamera()
+    })
+
+    shutterBtn.addEventListener('click', () => {
+      const photo = takePhoto()
+      snappedImage.src = photo
+      hideElement(cameraContainer)
+      showElement(imageContainer)
+      stopCamera()
+    })
+
+    scanBtn.addEventListener('click', () => {
+      const imageData = snappedImage.src
+
+      // Determine if the image is from a camera capture or a file upload
+      const isBase64Image = imageData.startsWith('data:image/')
+
+      // Create a FormData object
+      const formData = new FormData()
+
+      if (isBase64Image) {
+        // Convert base64 image to a Blob
+        const byteString = atob(imageData.split(',')[1])
+        const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0]
+        const ab = new ArrayBuffer(byteString.length)
+        const ia = new Uint8Array(ab)
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i)
+        }
+        const blob = new Blob([ab], { type: mimeString })
+        formData.append('image', blob, 'photo.png')
+      } else {
+        // If the imageData is a file URL, just append the file
+        formData.append('image', fileInput.files[0])
+      }
+
+      // Show scanning animation
+      scanBtn.textContent = 'Scanning...'
+      scanBtn.classList.add('animate-pulse')
+
+      fetch('/scan', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data)
+
+          // Hide scanning animation
+          scanBtn.textContent = 'Scan'
+          scanBtn.classList.remove('animate-pulse')
+
+          const checkFishResult = data.result.check_fish_result;
+      console.log('check_fish_result:', checkFishResult); // Log the check_fish_result to the console
+
+      if (checkFishResult === 'not fish') {
+        
+        showAlert('Please upload a fish image.');
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else {
+        showTooltip('It\'s a fish');
+        console.log('Fish detected:', data.result.species_detected);
+        sendSpeciesToResults(data.result.species_detected, data.result.image_path);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // Hide scanning animation
+      scanBtn.textContent = 'Scan';
+      scanBtn.classList.remove('animate-pulse');
+    });
+});
+
+    uploadPhotoBtn.addEventListener('click', () => {
+      showElement(uploadContainer)
+      hideElement(cameraContainer)
+      hideElement(imageContainer)
+    })
+
+    // Show alert
+    function showAlert(message) {
+      alertDiv.textContent = message
+      alertDiv.classList.add('alert-show')
+      setTimeout(() => {
+        alertDiv.classList.remove('alert-show')
+      }, 1000)
+    }
+
+    // Show tooltip
+    function showTooltip(message) {
+      tooltip.textContent = message
+      showElement(tooltip)
+      setTimeout(() => {
+        hideElement(tooltip)
+      }, 3000)
+    }
+
+    function sendSpeciesToResults(speciesName, imagePath) {
+    console.log("sendSpeciesToResults Fired Successfully...");
+    console.log("Species Name:", speciesName);
+    console.log("Image Path:", imagePath);
+
+    const formData = new FormData();
+    formData.append("species_name", speciesName);
+    formData.append("image_path", imagePath);
+
+    fetch("/results", {
+        method: "POST",
+        body: formData,
+    })
+    .then((response) => {
+        console.log("Response:", response);
+        if (!response.ok) {
+            console.error("Failed to fetch results:", response.statusText);
+            alert('Please Upload the Image Again');
+            window.location.reload();
+            return;
+        }
+        // Assuming the response contains HTML content
+        return response.text();
+    })
+    .then((htmlContent) => {
+        if (htmlContent) {
+            console.log("Received HTML content:", htmlContent); // Log the received HTML content
+            // Open the fetched HTML content in a new window
+            const newWindow = window.open("", "_self");
+            newWindow.document.open();
+            newWindow.document.write(htmlContent);
+            newWindow.document.close();
+        }
+    })
+    .catch((error) => {
+        console.error("Error fetching results:", error);
+    });
+}
+
+
+  </script>
+</body>
+</html>

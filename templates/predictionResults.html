@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Species Info</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .hover-focus:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    
+
+    <div class="max-w-lg mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+
+        <nav class="bg-blue-900 p-4 flex justify-between items-center shadow-lg">
+            <div class="text-white font-bold text-lg flex items-center">
+              <img src="../static/logo/logo.jpeg" alt="FishyFy Logo" class="h-8 w-8 mr-2" />
+              <a href="/">FishyFy</a>
+            </div>
+            <div class="text-white flex items-center space-x-4">
+              <span class="hidden sm:inline">User</span>
+              <button class="bg-gray-800 p-2 rounded-full focus:outline-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16m-7 6h7"
+                  />
+                </svg>
+              </button>
+            </div>
+          </nav>
+
+        <br>
+
+        <!-- Main Image Section -->
+        <div class="hover-focus bg-gray-400 h-48 flex items-center justify-center overflow-hidden">
+            <img id="speciesImage" src="{{fish_data.fish_image}}" alt="{{fish_data.fish_name}}" class="h-full w-auto">
+        </div>
+
+        <!-- Species Name Section -->
+        <div class="text-center py-4">
+            <div id="speciesName" class="text-xl font-bold">{{ fish_data.fish_name }}</div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="flex justify-between py-4 px-6">
+            <button id="statsBtn" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-l hover:bg-blue-600 active:bg-blue-700" onclick="toggleSection('stats')">Stats</button>
+            <button id="infoBtn" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 active:bg-blue-700" onclick="toggleSection('info')">Info</button>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="statsSection" class="hidden border-t border-gray-200 px-6 py-4">
+            <div class="bg-gray-400 h-24 flex items-center justify-center mb-4">
+                <p id="healthStatus" class="font-bold text-2xl text-white">{{ freshness_result }}</p>
+            </div>
+            {% if freshness_result == 'Spoiled' %}
+            <div class="text-center mb-2 font-semibold">Diseases Predicted</div>
+            {% for disease in disease_list %}
+            <div class="border border-gray-300 rounded px-4 py-2 mb-2 text-center">{{ disease }}</div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Info Section -->
+        <div id="infoSection" class="hidden border-t border-gray-200 px-6 py-4">
+            <div class="mb-4">
+                <div class="text-lg font-semibold mb-2">Appearance</div>
+                <div class="border border-gray-300 rounded px-4 py-2 mb-2">{{ fish_data.fish_appearance }}</div>
+            </div>
+            <div class="mb-4">
+                <div class="text-lg font-semibold mb-2">Habitat</div>
+                <div class="border border-gray-300 rounded px-4 py-2 mb-2">{{ fish_data.fish_habitat }}</div>
+            </div>
+            <div>
+                <div class="text-lg font-semibold mb-2">Nutrients</div>
+                <div class="border border-gray-300 rounded px-4 py-2">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nutrient Name</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for nutrient in fish_data.fish_nutrients %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ nutrient.nutrient_title }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ nutrient.nutrient_value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(section) {
+            document.getElementById('statsSection').classList.add('hidden');
+            document.getElementById('infoSection').classList.add('hidden');
+            if (section === 'stats') {
+                document.getElementById('statsSection').classList.remove('hidden');
+            } else if (section === 'info') {
+                document.getElementById('infoSection').classList.remove('hidden');
+            }
+        }
+
+        // Example to dynamically set Fresh or Not Fresh
+        // This can be replaced by actual logic
+        document.getElementById('healthStatus').innerText = "{{ freshness_result }}";
+    </script>
+
+</body>
+</html>

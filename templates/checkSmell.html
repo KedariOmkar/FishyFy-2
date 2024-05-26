@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishyFy - IoT Connection</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @keyframes progressBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .progress-bar {
+            animation: progressBar 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden">
+        <header class="bg-gray-800 text-white text-center py-4">
+            <h1 class="text-2xl font-bold"><a href="/">FishyFy</a></h1>
+        </header>
+        <div class="p-4">
+            <h2 class="text-center text-lg font-semibold mb-4">Connect the Board to the <span class="text-blue-600 hover:bg-blue-600 hover:text-white">Iot Board</span></h2>
+            <div class="flex justify-center items-center mb-4">
+                <img src="../static/images/nodemcu board.jpg" alt="Arduino Board" class="w-48 h-auto">
+            </div>
+            <div class="text-center mb-4">
+                <button id="connectButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 active:bg-blue-700 transition transform hover:scale-105">Connect Board</button>
+            </div>
+            <div id="progressContainer" class="hidden h-2 bg-gray-200 rounded">
+                <div id="progressBar" class="h-full bg-blue-500 rounded progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('connectButton').addEventListener('click', function () {
+            // Show progress bar
+            document.getElementById('progressContainer').classList.remove('hidden');
+            
+            // Send request to Flask backend
+            fetch('/connect_board')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'connected') {
+                        // Redirect to the next wireframe page
+                        window.location.href = '/iot_connected';
+                    } else {
+                        alert('Board not available');
+                        document.getElementById('progressContainer').classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while connecting to the board');
+                    document.getElementById('progressContainer').classList.add('hidden');
+                });
+        });
+    </script>
+
+</body>
+</html>
