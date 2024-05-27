@@ -18,13 +18,16 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
     <div class="max-w-md w-full bg-white shadow-lg rounded-lg overflow-hidden">
-        <header class="bg-gray-800 text-white text-center py-4">
+        <header class="bg-gray-800 text-white text-center py-4 flex flex-col items-center">
+            <!-- Logo -->
+            <img src="../static/logo/logo.jpeg" alt="Logo" class="w-12 h-12 mb-2">
+            <!-- Title -->
             <h1 class="text-2xl font-bold"><a href="/">FishyFy</a></h1>
         </header>
         <div class="p-4">
-            <h2 class="text-center text-lg font-semibold mb-4">Connect the Board to the <span class="text-blue-600 hover:bg-blue-600 hover:text-white">Iot Board</span></h2>
+            <h2 class="text-center text-lg font-semibold mb-4">Connect the Board to the <span class="text-blue-600 hover:bg-blue-600 hover:text-white transition duration-200">IoT Board</span></h2>
             <div class="flex justify-center items-center mb-4">
-                <img src="../static/images/nodemcu board.jpg" alt="Arduino Board" class="w-48 h-auto">
+                <img src="../static/images/nodemcu board.jpg" alt="Arduino Board" class="max-w-full h-auto">
             </div>
             <div class="text-center mb-4">
                 <button id="connectButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 active:bg-blue-700 transition transform hover:scale-105">Connect Board</button>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Page</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div class="container mx-auto py-8">
+        <!-- Logo and Heading -->
+        <a href="/" class="flex items-center justify-center mb-8">
+            <img src="../static/logo/logo.jpeg" alt="Logo" class="w-12 h-12 mr-2">
+            <h1 class="text-xl font-semibold">FishFy</h1>
+        </a>
+        
+        <!-- Dark Mode Checkbox Card -->
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Dark Mode</h2>
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Enable Dark Mode</span>
+                <label for="darkModeCheckbox" class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="darkModeCheckbox" class="form-checkbox h-5 w-5 text-gray-600 dark:text-gray-400">
+                </label>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

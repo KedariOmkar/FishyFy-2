@@ -302,9 +302,30 @@ def home():
 def checkFreshness():
     return render_template('checkFreshness.html')
 
-@app.route('/fishDetails')
-def fishDetails():
-    return render_template('fishDetails.html')
+@app.route('/viewSpecies')
+def viewSpecies():
+    # Retrieve data from MongoDB
+    fish_data = collection.find()
+    # Pass data to the frontend
+    return render_template('viewSpecies.html', fish_data_result=fish_data)
+
+@app.route('/details/<species_name>')
+def details(species_name):
+    try:
+        # Retrieve data from MongoDB based on species_name
+        fish_data = collection.find_one({"fish_name": species_name})
+
+        if fish_data:
+            # Pass data to the frontend
+            return render_template('fishDetails.html', fish_data=fish_data)
+        else:
+            # Handle case where species_name is not found
+            return render_template('error.html', error_message='Fish not found')
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+
 
 @app.route('/checkSmell')
 def checkSmell():
@@ -520,6 +541,28 @@ def iot_connected():
 
 
 
+""" This are the error handling pages """
+# Custom error handler for 404 Not Found
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+# Custom error handler for 500 Internal Server Error
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
+# Custom error handler for 403 Forbidden
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
+
+# Custom error handler for 400 Bad Request
+@app.errorhandler(400)
+def bad_request(e):
+    return render_template('400.html'), 400
+
+
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
