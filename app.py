@@ -3,7 +3,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 """ Importing the Flask Modules """
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-
+from flask_cors import CORS
 
 """ Importing the Required External Libarires """
 
@@ -31,6 +31,7 @@ from inference_sdk import InferenceHTTPClient
 
 """ Creating the instance of the flask application """
 app = Flask(__name__)
+CORS(app)
 
 # Secret key for session management
 app.secret_key = 'elon-musk'
@@ -565,4 +566,4 @@ def bad_request(e):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

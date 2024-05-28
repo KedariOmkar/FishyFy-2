@@ -182,27 +182,35 @@
 
     // Start camera
     async function startCamera() {
-      const constraints = { video: {} }
+    const constraints = { video: {} };
 
-      // Detect if the device is a mobile device
-      const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(
-        navigator.userAgent
-      )
+    // Detect if the device is a mobile device
+    const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
 
-      if (isMobileDevice) {
-        constraints.video.facingMode = 'environment' // Requests the rear camera
-      } else {
-        constraints.video.facingMode = 'user' // Requests the front camera
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        camera.srcObject = stream
-        camera.play()
-      } catch (error) {
-        console.error('Error accessing camera:', error)
-      }
+    if (isMobileDevice) {
+        constraints.video.facingMode = { exact: "environment" }; // Requests the rear camera
+    } else {
+        constraints.video.facingMode = "user"; // Requests the front camera
     }
+
+    // Check if getUserMedia is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error("getUserMedia is not supported in this browser.");
+        alert("Error: getUserMedia is not supported in this browser.");
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        camera.srcObject = stream;
+        camera.play();
+    } catch (error) {
+        console.error("Error accessing camera:", error);
+        alert("Error accessing camera: " + error.message);
+    }
+}
+
+
 
     // Stop camera
     function stopCamera() {
